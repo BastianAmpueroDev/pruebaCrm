@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  SALES
+}
+
+enum Stage {
+  LEAD_NUEVO
+  CONTACTADO
+  DIAGNOSTICO
+  PROPUESTA_ENVIADA
+  NEGOCIACION
+  GANADO
+  PERDIDO
+}
+
+enum Priority {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  role          Role           @default(SALES)
+  createdAt     DateTime       @default(now())
+  conversations Conversation[]
+}
+
+model Opportunity {
+  id                     String   @id @default(uuid())
+  companyName            String
+  contactName            String
+  contactEmail           String
+  opportunityName        String
+  description            String
+  estimatedValue         Decimal  @db.Decimal(14, 2)
+  currency               String   @default("USD")
+  stage                  Stage    @default(LEAD_NUEVO)
+  priority               Priority @default(MEDIA)
+  probability            Int
+  owner                  String
+  nextFollowUpDate       DateTime @db.Date
+  lastInteractionSummary String?
+  aiRecommendation       String?
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([stage, priority])
+  @@index([owner])
+  @@index([nextFollowUpDate])
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  title     String?
+  createdAt DateTime  @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  createdAt      DateTime     @default(now())
+}
+
+model AiInteractionLog {
+  id             String   @id @default(uuid())
+  conversationId String?
+  userMessage    String
+  toolsUsed      String[]
+  inputTokens    Int
+  outputTokens   Int
+  latencyMs      Int
+  model          String
+  success        Boolean  @default(true)
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+}
