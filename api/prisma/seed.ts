@@ -1,9 +1,7 @@
 import { PrismaClient, Stage, Priority, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL ?? 'postgresql://crm:crm_password@localhost:5432/crm_apiux',
-});
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');

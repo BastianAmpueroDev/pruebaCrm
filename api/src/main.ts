@@ -25,6 +25,12 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Health check
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.get('/api/health', (_req: any, res: any) =>
+    res.json({ status: 'ok', timestamp: new Date().toISOString() }),
+  );
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`API corriendo en http://localhost:${port}/api`);
